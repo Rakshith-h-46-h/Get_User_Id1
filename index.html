@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Get User Id</title>
+  <script>
+    function sendPhoneNumber() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sender = urlParams.get("senderId")?.trim();
+      const phoneNumber = urlParams.get("phone_number")?.trim();
+      const kycStatus = urlParams.get("kyc_status")?.trim();
+
+      if (sender && phoneNumber && kycStatus) {
+        const dataObject = {
+          sender: sender,
+          phone_number: phoneNumber,
+          kyc_status: kycStatus
+        };
+
+        const payload = {
+          event: "sendPhoneNumber",
+          data: JSON.stringify(dataObject)
+        };
+
+        // First message (general use)
+        top.postMessage(payload, "*");
+
+        // Second message (e.g., for YM or specific integration)
+        window.parent.postMessage({
+          event_code: 'ym-client-event',
+          data: JSON.stringify({
+            event: {
+              code: "sendPhoneNumber",
+              data: {
+                eventdata: dataObject   // ✅ FIXED: was 'data' earlier
+              }
+            }
+          })
+        }, '*');
+
+        console.log("Sent phone number payload:", payload);
+      } else {
+        console.error("Missing required parameters:", { sender, phoneNumber, kycStatus });
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <button id="sendPhoneNumber" onclick="sendPhoneNumber()">Get User Id</button>
+</body>
+
+</html>
